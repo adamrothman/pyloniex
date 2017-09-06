@@ -21,11 +21,11 @@ class RateLimiter:
     limits the number of keys that can be tracked. If this limit is reached,
     the oldest key will be evicted.
 
-    If you just want to limit some event to no more than X times per second,
-    set `per_second` = `burst` = X.
+    If you just want to limit some event(s) to no more than X times per second,
+    set `per_second` := X and `burst` := 1.
 
     If unused capacity can be "banked" for increased usage later, set `burst`
-    to some value > `per_second`.
+    to some value > 1.
     """
 
     def __init__(self, per_second: float, burst: float, size: int) -> None:

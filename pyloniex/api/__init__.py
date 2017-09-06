@@ -30,11 +30,7 @@ class PoloniexBaseAPI(metaclass=ABCMeta):
         *,
         requests_per_second: int = REQUESTS_PER_SECOND,
     ) -> None:
-        self._rate_limiter = RateLimiter(
-            requests_per_second,
-            requests_per_second,
-            1,
-        )
+        self._rate_limiter = RateLimiter(requests_per_second, 1, 1)
         self._requests_per_second = requests_per_second
         self._session = Session()
 
