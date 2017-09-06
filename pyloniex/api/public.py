@@ -18,15 +18,18 @@ class PoloniexPublicAPI(PoloniexBaseAPI):
     ) -> None:
         super().__init__(requests_per_second=requests_per_second)
 
+    def public_request(self, params: Dict[str, Any]):
+        return self.request('GET', type(self).host, params=params)
+
     # Commands
 
     def return_ticker(self):
         params = {'command': 'returnTicker'}
-        return self.request('GET', type(self).host, params=params)
+        return self.public_request(params)
 
     def return_24h_volume(self):
         params = {'command': 'return24hVolume'}
-        return self.request('GET', type(self).host, params=params)
+        return self.public_request(params)
 
     def return_order_book(
         self,
@@ -40,7 +43,7 @@ class PoloniexPublicAPI(PoloniexBaseAPI):
         }
         if depth is not None:
             params['depth'] = depth
-        return self.request('GET', type(self).host, params=params)
+        return self.public_request(params)
 
     def return_trade_history(
         self,
@@ -56,7 +59,7 @@ class PoloniexPublicAPI(PoloniexBaseAPI):
         if start is not None and end is not None:
             params['start'] = start
             params['end'] = end
-        return self.request('GET', type(self).host, params=params)
+        return self.public_request(params)
 
     def return_chart_data(
         self,
@@ -73,17 +76,17 @@ class PoloniexPublicAPI(PoloniexBaseAPI):
             'start': start,
             'end': end,
         }
-        return self.request('GET', type(self).host, params=params)
+        return self.public_request(params)
 
     def return_currencies(self):
         params = {
             'command': 'returnCurrencies',
         }
-        return self.request('GET', type(self).host, params=params)
+        return self.public_request(params)
 
     def return_loan_orders(self, *, currency: str):
         params = {
             'command': 'returnLoanOrders',
             'currency': currency,
         }
-        return self.request('GET', type(self).host, params=params)
+        return self.public_request(params)

@@ -46,17 +46,17 @@ class PoloniexPrivateAPI(PoloniexBaseAPI):
         super().__init__(requests_per_second=REQUESTS_PER_SECOND)
         self._session.auth = PoloniexAuth(key, secret)  # type: ignore
 
-    @property
-    def nonce(self) -> int:
+    @classmethod
+    def nonce(cls) -> int:
         """We use the time to generate our nonce values. The actual value must
         be an int and cannot repeat, so we convert to microseconds.
         """
         return int(time.time() * 1000000)
 
-    def request(self, *args, **kwargs):
-        data = kwargs.pop('data', {})
-        data['nonce'] = self.nonce
-        return super().request(*args, data=data, **kwargs)
+    def private_request(self, params: Dict[str, Any]):
+        cls = type(self)
+        params['nonce'] = cls.nonce()
+        return self.request('POST', cls.host, data=params)
 
     # Commands
 
@@ -64,7 +64,7 @@ class PoloniexPrivateAPI(PoloniexBaseAPI):
         params = {
             'command': 'returnBalances',
         }
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def return_complete_balances(self, *, account: Optional[str] = None):
         params = {
@@ -72,20 +72,20 @@ class PoloniexPrivateAPI(PoloniexBaseAPI):
         }
         if account is not None:
             params['account'] = account
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def return_deposit_addresses(self):
         params = {
             'command': 'returnDepositAddresses',
         }
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def generate_new_address(self, *, currency: str):
         params = {
             'command': 'generateNewAddress',
             'currency': currency,
         }
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def return_deposits_withdrawals(self, *, start: int, end: int):
         params = {
@@ -93,14 +93,14 @@ class PoloniexPrivateAPI(PoloniexBaseAPI):
             'start': start,
             'end': end,
         }
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def return_open_orders(self, *, currency_pair: Optional[str] = None):
         params = {
             'command': 'returnOpenOrders',
             'currencyPair': 'all' if currency_pair is None else currency_pair,
         }
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def return_trade_history(
         self,
@@ -120,14 +120,14 @@ class PoloniexPrivateAPI(PoloniexBaseAPI):
             params['end'] = end
         if limit is not None:
             params['limit'] = limit
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def return_order_trades(self, *, order_number: int):
         params = {
             'command': 'returnOrderTrades',
             'orderNumber': order_number,
         }
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def buy(
         self,
@@ -145,7 +145,7 @@ class PoloniexPrivateAPI(PoloniexBaseAPI):
         }
         if type is not None:
             params[order_type.value] = 1
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def sell(
         self,
@@ -163,14 +163,14 @@ class PoloniexPrivateAPI(PoloniexBaseAPI):
         }
         if type is not None:
             params[order_type.value] = 1
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def cancel_order(self, *, order_number: int):
         params = {
             'command': 'cancelOrder',
             'orderNumber': order_number,
         }
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def move_order(
         self,
@@ -189,7 +189,7 @@ class PoloniexPrivateAPI(PoloniexBaseAPI):
             params['amount'] = amount
         if order_type is not None:
             params[order_type.value] = 1
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def withdraw(
         self,
@@ -206,13 +206,13 @@ class PoloniexPrivateAPI(PoloniexBaseAPI):
         }
         if payment_id is not None:
             params['paymentId'] = payment_id
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def return_fee_info(self):
         params = {
             'command': 'returnFeeInfo',
         }
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def return_available_account_balances(
         self,
@@ -224,13 +224,13 @@ class PoloniexPrivateAPI(PoloniexBaseAPI):
         }
         if account is not None:
             params['account'] = account
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def return_tradable_balances(self):
         params = {
             'command': 'returnTradableBalances',
         }
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def transfer_balance(
         self,
@@ -246,13 +246,13 @@ class PoloniexPrivateAPI(PoloniexBaseAPI):
             'fromAccount': from_account,
             'toAccount': to_account,
         }
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def return_margin_account_summary(self):
         params = {
             'command': 'returnMarginAccountSummary',
         }
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def margin_buy(
         self,
@@ -270,7 +270,7 @@ class PoloniexPrivateAPI(PoloniexBaseAPI):
         }
         if lending_rate is not None:
             params['lendingRate'] = lending_rate
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def margin_sell(
         self,
@@ -288,21 +288,21 @@ class PoloniexPrivateAPI(PoloniexBaseAPI):
         }
         if lending_rate is not None:
             params['lendingRate'] = lending_rate
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def get_margin_position(self, *, currency_pair: Optional[str] = None):
         params = {
             'command': 'getMarginPosition',
             'currencyPair': 'all' if currency_pair is None else currency_pair,
         }
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def close_margin_position(self, *, currency_pair: str):
         params = {
             'command': 'closeMarginPosition',
             'currencyPair': currency_pair,
         }
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def create_loan_offer(
         self,
@@ -321,26 +321,26 @@ class PoloniexPrivateAPI(PoloniexBaseAPI):
             'autoRenew': 1 if auto_renew is True else 0,
             'lendingRate': lending_rate,
         }
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def cancel_loan_offer(self, *, order_number: int):
         params = {
             'command': 'cancelLoanOffer',
             'orderNumber': order_number,
         }
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def return_open_loan_offers(self):
         params = {
             'command': 'returnOpenLoanOffers',
         }
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def return_active_loans(self):
         params = {
             'command': 'returnActiveLoans',
         }
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def return_lending_history(
         self,
@@ -356,11 +356,11 @@ class PoloniexPrivateAPI(PoloniexBaseAPI):
         }
         if limit is not None:
             params['limit'] = limit
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
 
     def toggle_auto_renew(self, *, order_number: int):
         params = {
             'command': 'toggleAutoRenew',
             'orderNumber': order_number,
         }
-        return self.request('POST', type(self).host, data=params)
+        return self.private_request(params)
