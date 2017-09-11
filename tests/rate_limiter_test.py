@@ -6,7 +6,9 @@ from pyloniex.utils import RateLimiter
 
 
 def test_rate_limiter():
-    limiter = RateLimiter(4, 1, 1)
+    max_per_sec = 6
+
+    limiter = RateLimiter(max_per_sec, 1, 1)
     counter = Counter()
 
     while True:
@@ -16,10 +18,6 @@ def test_rate_limiter():
             counter[bucket] += 1
         if len(counter) > 4:
             break
-        time.sleep(0.01)
 
     for bucket, count in counter.items():
-        assert count <= 4
-
-    print()
-    print(counter)
+        assert count <= max_per_sec

@@ -9,6 +9,7 @@ from typing import List
 from typing import Optional
 from typing import Union
 
+import tenacity
 from requests import Request
 from requests import Session
 
@@ -20,6 +21,14 @@ from pyloniex.utils import RateLimiter
 REQUESTS_PER_SECOND = 6
 
 logger = getLogger(__name__)
+
+
+def _retry_poloniex_error(exc):
+    if isinstance(exc, PoloniexRequestError) and exc.status_code == 429:
+        return True
+    elif isinstance(exc, PoloniexServerError):
+        return True
+    return False
 
 
 class PoloniexBaseAPI(metaclass=ABCMeta):
@@ -34,6 +43,12 @@ class PoloniexBaseAPI(metaclass=ABCMeta):
         self._requests_per_second = requests_per_second
         self._session = Session()
 
+    @tenacity.retry(
+        retry=tenacity.retry_if_exception(_retry_poloniex_error),
+        wait=tenacity.wait_exponential() + tenacity.wait_random(0, 1),
+        stop=tenacity.stop_after_attempt(4) | tenacity.stop_after_delay(8),
+        reraise=True,
+    )
     def request(
         self,
         *args,
@@ -65,6 +80,7 @@ class PoloniexBaseAPI(metaclass=ABCMeta):
             raise PoloniexRequestError(status, error)
         elif status >= 500:
             raise PoloniexServerError(status, error)
-        else:
-            # We never expect to get a 3xx; if we do, just return None
-            return None
+
+        # We shouldn't ever get a 3xx since requests follows redirects; return
+        # None to make mypy happy
+        return None
