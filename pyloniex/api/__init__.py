@@ -62,25 +62,21 @@ class PoloniexBaseAPI(metaclass=ABCMeta):
         prepared = self._session.prepare_request(request)
 
         response = self._session.send(prepared)
-        try:
-            data = response.json()
-        except ValueError:
-            logger.exception('Error decoding response JSON')
-            data = None
 
         status = response.status_code
         if status >= 200 and status < 300:
+            data = None
+            try:
+                data = response.json()
+            except ValueError:
+                logger.exception('Error decoding response JSON')
             return data
-
-        error = None
-        if isinstance(data, dict) and 'error' in data:
-            error = data['error']
-
-        if status >= 400 and status < 500:
-            raise PoloniexRequestError(status, error)
+        elif status >= 400 and status < 500:
+            raise PoloniexRequestError(response)
         elif status >= 500:
-            raise PoloniexServerError(status, error)
-
-        # We shouldn't ever get a 3xx since requests follows redirects; return
-        # None to make mypy happy
-        return None
+            raise PoloniexServerError(response)
+        else:
+            # We shouldn't ever get 1xx responses (Poloniex doesn't send them)
+            # or 3xx responses (requests follows redirects); return None to
+            # make mypy happy
+            return None
