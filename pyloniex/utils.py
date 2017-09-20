@@ -1,7 +1,26 @@
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
 from time import time
+from typing import Any
+from typing import Dict
 from typing import Tuple
+
+
+def protect_floats(params: Dict[str, Any]) -> Dict[str, Any]:
+    """Python's default behavior for stringifying small floats is to use
+    scientific notation.
+
+        >>> str(0.00000001)
+        '1e-08'
+
+    This is a bummer for us. Poloniex uses 8 points of precision, so that's how
+    we roll.
+    """
+    return {
+        k: (f'{v:.8f}' if isinstance(v, float) else v)
+        for k, v
+        in params.items()
+    }
 
 
 class RateLimiter:

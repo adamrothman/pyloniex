@@ -13,6 +13,7 @@ from requests.auth import AuthBase
 from pyloniex.api import PoloniexBaseAPI
 from pyloniex.api import REQUESTS_PER_SECOND
 from pyloniex.constants import OrderType
+from pyloniex.utils import protect_floats
 
 
 class PoloniexAuth(AuthBase):
@@ -55,8 +56,9 @@ class PoloniexPrivateAPI(PoloniexBaseAPI):
 
     def private_request(self, params: Dict[str, Any]):
         cls = type(self)
-        params['nonce'] = cls.nonce()
-        return self.request('POST', cls.host, data=params)
+        data = protect_floats(params)
+        data['nonce'] = cls.nonce()
+        return self.request('POST', cls.host, data=data)
 
     # Commands
 

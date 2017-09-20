@@ -5,6 +5,7 @@ from typing import Optional
 
 from pyloniex.api import PoloniexBaseAPI
 from pyloniex.api import REQUESTS_PER_SECOND
+from pyloniex.utils import protect_floats
 
 
 class PoloniexPublicAPI(PoloniexBaseAPI):
@@ -19,7 +20,11 @@ class PoloniexPublicAPI(PoloniexBaseAPI):
         super().__init__(requests_per_second=requests_per_second)
 
     def public_request(self, params: Dict[str, Any]):
-        return self.request('GET', type(self).host, params=params)
+        return self.request(
+            'GET',
+            type(self).host,
+            params=protect_floats(params),
+        )
 
     # Commands
 
