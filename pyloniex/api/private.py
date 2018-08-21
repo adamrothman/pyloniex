@@ -145,7 +145,7 @@ class PoloniexPrivateAPI(PoloniexBaseAPI):
             'rate': rate,
             'amount': amount,
         }
-        if type is not None:
+        if order_type is not None:
             params[order_type.value] = 1
         return self.private_request(params)
 
@@ -163,7 +163,7 @@ class PoloniexPrivateAPI(PoloniexBaseAPI):
             'rate': rate,
             'amount': amount,
         }
-        if type is not None:
+        if order_type is not None:
             params[order_type.value] = 1
         return self.private_request(params)
 
