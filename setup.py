@@ -6,13 +6,13 @@ from setuptools import setup
 
 setup(
     name='pyloniex',
-    version='0.0.8',
+    version='0.0.9',
 
     packages=find_packages(),
 
     install_requires=[
         'cryptography',
-        'requests',
+        'requests>=2.20.0',
         'tenacity',
     ],
 
